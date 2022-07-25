@@ -78,35 +78,15 @@ app.layout = dmc.Container(
 )
 
 
-def parse_contents(contents, filename):
-    # https://dash.plotly.com/dash-core-components/upload
-    _, content_string = contents.split(",")
-
-    decoded = base64.b64decode(content_string)
-    df = pd.DataFrame()
-    try:
-        if "csv" in filename:
-            # Assume that the user uploaded a CSV file
-            df = pd.read_csv(io.StringIO(decoded.decode("utf-8")))
-        elif "xls" in filename:
-            # Assume that the user uploaded an excel file
-            df = pd.read_excel(io.BytesIO(decoded))
-    except Exception as e:
-        print(e)
-        return html.Div(["There was an error processing this file."])
-
-    return df
-
-
 @app.callback(
     Output("golf-data", "data"),
     Output("course-data", "data"),
     Output("course-rating-data", "data"),
     Input("upload-data", "contents"),
 )
-def get_golf_data(list_of_contents):
-    if list_of_contents is not None:
-        _, content_string = list_of_contents.split(",")
+def get_golf_data(contents):
+    if contents is not None:
+        _, content_string = contents.split(",")
         decoded = base64.b64decode(content_string)
         xls = pd.ExcelFile(io.BytesIO(decoded))
     else:

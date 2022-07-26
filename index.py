@@ -11,6 +11,7 @@ from dash import dcc
 from dash import html
 
 from app import app
+from time import sleep
 
 server = app.server
 
@@ -70,7 +71,7 @@ app.layout = dmc.Container(
         dmc.Grid(
             children=[
                 dmc.Col(sidebar_div(), span=3),
-                dmc.Col(html.Div(id="content-div"), span=9),
+                dmc.Col(dcc.Loading(html.Div(id="content-div")), span=9),
             ],
         ),
     ],

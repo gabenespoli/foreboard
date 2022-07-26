@@ -35,6 +35,12 @@ def sidebar_div():
                     "margin": "10px",
                 },
             ),
+            dmc.Select(
+                id="select-metric",
+                label="Metric",
+                value="Accuracy",
+                data=["ScoreToPar", "Accuracy"],
+            ),
             dmc.MultiSelect(
                 id="select-golfer",
                 label="Golfer",
@@ -47,22 +53,13 @@ def sidebar_div():
     )
 
 
-def graph_div():
-    return html.Div(
-        [
-            dmc.Title("Graph", order=2),
-            dcc.Graph(id="graph1"),
-        ]
-    )
-
-
 app.layout = dmc.Container(
     id="container",
     size="xl",
     children=[
         dcc.Store(id="golf-data"),
-        dcc.Store(id="course-data"),
-        dcc.Store(id="course-rating-data"),
+        # dcc.Store(id="course-data"),
+        # dcc.Store(id="course-rating-data"),
         dmc.Header(
             height=60,
             children=[dmc.Text("Foreboard", size="xl", weight=700)],
@@ -71,7 +68,7 @@ app.layout = dmc.Container(
         dmc.Grid(
             children=[
                 dmc.Col(sidebar_div(), span=3),
-                dmc.Col(graph_div(), span=9),
+                dmc.Col(html.Div(id="content-div"), span=9),
             ],
         ),
     ],
@@ -80,8 +77,8 @@ app.layout = dmc.Container(
 
 @app.callback(
     Output("golf-data", "data"),
-    Output("course-data", "data"),
-    Output("course-rating-data", "data"),
+    # Output("course-data", "data"),
+    # Output("course-rating-data", "data"),
     Input("upload-data", "contents"),
 )
 def get_golf_data(contents):
@@ -93,12 +90,15 @@ def get_golf_data(contents):
         xls = pd.ExcelFile(DEFAULT_DATA_FILE)
     gf = pd.read_excel(xls, sheet_name="Scores")
     cs = pd.read_excel(xls, sheet_name="Courses")
-    course_rating = pd.read_excel(xls, sheet_name="CourseRating")
-    return (
-        gf.to_dict("records"),
-        cs.to_dict("records"),
-        course_rating.to_dict("records"),
-    )
+    gf = gf.merge(cs, how="left", on=["Course", "Tee", "Hole"])
+    gf["ScoreToPar"] = gf["Score"] - gf["Par"]
+    # course_rating = pd.read_excel(xls, sheet_name="CourseRating")
+    # return (
+    #     gf.to_dict("records"),
+    #     cs.to_dict("records"),
+    #     course_rating.to_dict("records"),
+    # )
+    return gf.to_dict("records")
 
 
 @dash.callback(
@@ -116,26 +116,45 @@ def update_dropdowns(golf_data):
 
 
 @dash.callback(
-    Output("graph1", "figure"),
-    Input("golf-data", "data"),
-    Input("course-data", "data"),
+    Output("content-div", "children"),
+    Input("select-metric", "value"),
     Input("select-golfer", "value"),
     Input("select-course", "value"),
+    Input("golf-data", "data"),
 )
-def update_graph1(golf_data: dict, course_data: dict, golfers: list, courses: list):
+def update_graph1(metric: str, golfers: list, courses: list, golf_data: dict):
     gf = pd.DataFrame().from_dict(golf_data)
-    cs = pd.DataFrame().from_dict(course_data)
+    gf = gf[gf["Golfer"].isin(golfers) & gf["Course"].isin(courses)]
 
-    gf = gf[gf["Golfer"].isin(golfers)]
-    cs = cs[cs["Course"].isin(courses)]
+    if metric == "ScoreToPar":
+        return dcc.Graph(
+            figure=px.bar(
+                gf.groupby("Par")["ScoreToPar"].mean().reset_index(),
+                x="Par",
+                y="ScoreToPar",
+                title=metric,
+            )
+        )
 
-    scores = gf.merge(cs, how="left", on=["Course", "Tee", "Hole"])
+    elif metric == "Accuracy":
+        def fig(col):
+            return dcc.Graph(
+                figure=px.bar(
+                    gf[gf[col].isin(["L", "H", "R"])]
+                    .groupby([col, "Par"])
+                    .size()
+                    .rename("Count")
+                    .reset_index(),
+                    x=col,
+                    y="Count",
+                    facet_col="Par",
+                    title=col,
+                    category_orders={col: ["L", "H", "R"]},
+                )
+            )
+        return [fig("TeeAccuracy"), fig("ApproachAccuracy")]
 
-    scores["ScoreToPar"] = scores["Score"] - scores["Par"]
-
-    df_fig = scores.groupby("Par")["ScoreToPar"].mean().reset_index()
-
-    return px.bar(df_fig, x="Par", y="ScoreToPar")
+    return [dmc.Text("Out of bounds.")]
 
 
 if __name__ == "__main__":

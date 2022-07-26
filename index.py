@@ -91,11 +91,11 @@ def get_golf_data(contents):
         xls = pd.ExcelFile(io.BytesIO(decoded))
     else:
         xls = pd.ExcelFile(DEFAULT_DATA_FILE)
-    df = pd.read_excel(xls, sheet_name="Scores")
+    gf = pd.read_excel(xls, sheet_name="Scores")
     courses = pd.read_excel(xls, sheet_name="Courses")
     course_rating = pd.read_excel(xls, sheet_name="CourseRating")
     return (
-        df.to_dict("records"),
+        gf.to_dict("records"),
         courses.to_dict("records"),
         course_rating.to_dict("records"),
     )
@@ -109,9 +109,9 @@ def get_golf_data(contents):
     Input("golf-data", "data"),
 )
 def update_dropdowns(golf_data):
-    df = pd.DataFrame().from_dict(golf_data)
-    golfers = df["Golfer"].unique()
-    courses = df["Course"].unique()
+    gf = pd.DataFrame().from_dict(golf_data)
+    golfers = gf["Golfer"].unique()
+    courses = gf["Course"].unique()
     return golfers, [golfers[0]], courses, [courses[0]]
 
 
@@ -123,10 +123,10 @@ def update_dropdowns(golf_data):
     Input("select-course", "value"),
 )
 def update_graph1(golf_data: dict, course_data: dict, golfers: list, courses: list):
-    df = pd.DataFrame().from_dict(golf_data)
+    gf = pd.DataFrame().from_dict(golf_data)
     cs = pd.DataFrame().from_dict(course_data)
 
-    df = df[df["Golfer"].isin(golfers)]
+    gf = gf[gf["Golfer"].isin(golfers)]
     cs = cs[cs["Course"].isin(courses)]
 
     par = (
@@ -137,7 +137,7 @@ def update_graph1(golf_data: dict, course_data: dict, golfers: list, courses: li
     )
 
     scores = (
-        df[df["DataType"] == "Score"]
+        gf[gf["DataType"] == "Score"]
         .drop(columns=["DataType"])
         .melt(["Golfer", "Date", "Course", "Tee"])
         .rename(columns={"variable": "Hole", "value": "Score"})

@@ -12,6 +12,8 @@ from dash import html
 
 from app import app
 
+server = app.server
+
 DEFAULT_DATA_FILE = "./data/golf_scores.xlsx"
 
 

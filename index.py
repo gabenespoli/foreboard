@@ -92,11 +92,11 @@ def get_golf_data(contents):
     else:
         xls = pd.ExcelFile(DEFAULT_DATA_FILE)
     gf = pd.read_excel(xls, sheet_name="Scores")
-    courses = pd.read_excel(xls, sheet_name="Courses")
+    cs = pd.read_excel(xls, sheet_name="Courses")
     course_rating = pd.read_excel(xls, sheet_name="CourseRating")
     return (
         gf.to_dict("records"),
-        courses.to_dict("records"),
+        cs.to_dict("records"),
         course_rating.to_dict("records"),
     )
 
@@ -129,20 +129,7 @@ def update_graph1(golf_data: dict, course_data: dict, golfers: list, courses: li
     gf = gf[gf["Golfer"].isin(golfers)]
     cs = cs[cs["Course"].isin(courses)]
 
-    par = (
-        cs[cs["DataType"] == "Par"]
-        .drop(columns=["DataType"])
-        .melt(["Course", "Tee"])
-        .rename(columns={"variable": "Hole", "value": "Par"})
-    )
-
-    scores = (
-        gf[gf["DataType"] == "Score"]
-        .drop(columns=["DataType"])
-        .melt(["Golfer", "Date", "Course", "Tee"])
-        .rename(columns={"variable": "Hole", "value": "Score"})
-        .merge(par, how="left", on=["Course", "Tee", "Hole"])
-    )
+    scores = gf.merge(cs, how="left", on=["Course", "Tee", "Hole"])
 
     scores["ScoreToPar"] = scores["Score"] - scores["Par"]
 

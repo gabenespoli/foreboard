@@ -4,12 +4,12 @@ import io
 import dash
 import dash_mantine_components as dmc
 import pandas as pd
-import plotly.express as px
 from dash import Input
 from dash import Output
 from dash import dcc
 from dash import html
 
+import graphs
 import utils
 from app import app
 
@@ -141,34 +141,13 @@ def update_graph1(
     gf = utils.filter_gf(gf, dates=dates, golfers=golfers, courses=courses)
 
     if metric == "ScoreToPar":
-        return dcc.Graph(
-            figure=px.bar(
-                gf.groupby("Par")["ScoreToPar"].mean().reset_index(),
-                x="Par",
-                y="ScoreToPar",
-                title=metric,
-            )
-        )
+        return graphs.score_to_par(gf)
 
     elif metric == "Accuracy":
-
-        def fig(col):
-            return dcc.Graph(
-                figure=px.bar(
-                    gf[gf[col].isin(["L", "H", "R"])]
-                    .groupby([col, "Par"])
-                    .size()
-                    .rename("Count")
-                    .reset_index(),
-                    x=col,
-                    y="Count",
-                    facet_col="Par",
-                    title=col,
-                    category_orders={col: ["L", "H", "R"]},
-                )
-            )
-
-        return [fig("TeeAccuracy"), fig("ApproachAccuracy")]
+        return (
+            graphs.accuracy(gf, "TeeAccuracy"),
+            graphs.accuracy(gf, "ApproachAccuracy"),
+        )
 
     return [dmc.Text("Out of bounds.")]
 

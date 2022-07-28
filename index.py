@@ -113,7 +113,7 @@ def update_dropdowns(golf_data):
     min_date = gf["Date"].min()
     max_date = gf["Date"].max()
     golfers = gf["Golfer"].unique()
-    golfer_style = {"display": "none"} if len(golfers) == 1 else {}
+    golfer_style = {} if len(golfers) > 1 else {"display": "none"}
     courses = gf["Course"].unique()
     return (
         min_date,

@@ -94,6 +94,7 @@ def get_golf_data(contents):
 
 
 @dash.callback(
+    Output("select-golfer", "style"),
     Output("select-golfer", "data"),
     Output("select-golfer", "value"),
     Output("select-course", "data"),
@@ -103,8 +104,12 @@ def get_golf_data(contents):
 def update_dropdowns(golf_data):
     gf = pd.DataFrame().from_dict(golf_data)
     golfers = gf["Golfer"].unique()
+    if len(golfers) < 2:
+        golfer_style = {"display": "none"}
+    else:
+        golfer_style = {}
     courses = gf["Course"].unique()
-    return golfers, [golfers[0]], courses, [courses[0]]
+    return golfer_style, golfers, [golfers[0]], courses, [courses[0]]
 
 
 @dash.callback(
@@ -129,6 +134,7 @@ def update_graph1(metric: str, golfers: list, courses: list, golf_data: dict):
         )
 
     elif metric == "Accuracy":
+
         def fig(col):
             return dcc.Graph(
                 figure=px.bar(
@@ -144,6 +150,7 @@ def update_graph1(metric: str, golfers: list, courses: list, golf_data: dict):
                     category_orders={col: ["L", "H", "R"]},
                 )
             )
+
         return [fig("TeeAccuracy"), fig("ApproachAccuracy")]
 
     return [dmc.Text("Out of bounds.")]

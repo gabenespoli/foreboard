@@ -10,6 +10,7 @@ from dash import Output
 from dash import dcc
 from dash import html
 
+import utils
 from app import app
 
 server = app.server
@@ -42,6 +43,10 @@ def sidebar_div():
                 label="Metric",
                 value="Accuracy",
                 data=["ScoreToPar", "Accuracy"],
+            ),
+            dmc.DateRangePicker(
+                id="date-range",
+                label="Dates",
             ),
             dmc.MultiSelect(
                 id="select-golfer",
@@ -94,6 +99,8 @@ def get_golf_data(contents):
 
 
 @dash.callback(
+    Output("date-range", "minDate"),
+    Output("date-range", "maxDate"),
     Output("select-golfer", "style"),
     Output("select-golfer", "data"),
     Output("select-golfer", "value"),
@@ -103,25 +110,35 @@ def get_golf_data(contents):
 )
 def update_dropdowns(golf_data):
     gf = pd.DataFrame().from_dict(golf_data)
+    min_date = gf["Date"].min()
+    max_date = gf["Date"].max()
     golfers = gf["Golfer"].unique()
-    if len(golfers) < 2:
-        golfer_style = {"display": "none"}
-    else:
-        golfer_style = {}
+    golfer_style = {"display": "none"} if len(golfers) == 1 else {}
     courses = gf["Course"].unique()
-    return golfer_style, golfers, [golfers[0]], courses, [courses[0]]
+    return (
+        min_date,
+        max_date,
+        golfer_style,
+        golfers,
+        [golfers[0]],
+        courses,
+        [courses[0]],
+    )
 
 
 @dash.callback(
     Output("content-div", "children"),
     Input("select-metric", "value"),
+    Input("date-range", "value"),
     Input("select-golfer", "value"),
     Input("select-course", "value"),
     Input("golf-data", "data"),
 )
-def update_graph1(metric: str, golfers: list, courses: list, golf_data: dict):
+def update_graph1(
+    metric: str, dates: list, golfers: list, courses: list, golf_data: dict
+):
     gf = pd.DataFrame().from_dict(golf_data)
-    gf = gf[gf["Golfer"].isin(golfers) & gf["Course"].isin(courses)]
+    gf = utils.filter_gf(gf, dates=dates, golfers=golfers, courses=courses)
 
     if metric == "ScoreToPar":
         return dcc.Graph(

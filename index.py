@@ -11,7 +11,6 @@ from dash import dcc
 from dash import html
 
 from app import app
-from time import sleep
 
 server = app.server
 
@@ -61,8 +60,6 @@ app.layout = dmc.Container(
     size="xl",
     children=[
         dcc.Store(id="golf-data"),
-        # dcc.Store(id="course-data"),
-        # dcc.Store(id="course-rating-data"),
         dmc.Header(
             height=60,
             children=[dmc.Text("Foreboard", size="xl", weight=700)],
@@ -80,8 +77,6 @@ app.layout = dmc.Container(
 
 @app.callback(
     Output("golf-data", "data"),
-    # Output("course-data", "data"),
-    # Output("course-rating-data", "data"),
     Input("upload-data", "contents"),
 )
 def get_golf_data(contents):
@@ -95,12 +90,6 @@ def get_golf_data(contents):
     cs = pd.read_excel(xls, sheet_name="Courses")
     gf = gf.merge(cs, how="left", on=["Course", "Tee", "Hole"])
     gf["ScoreToPar"] = gf["Score"] - gf["Par"]
-    # course_rating = pd.read_excel(xls, sheet_name="CourseRating")
-    # return (
-    #     gf.to_dict("records"),
-    #     cs.to_dict("records"),
-    #     course_rating.to_dict("records"),
-    # )
     return gf.to_dict("records")
 
 

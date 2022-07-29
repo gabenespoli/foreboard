@@ -60,6 +60,14 @@ def convert_date(
     raise ValueError
 
 
+def parse_data_file(xls = pd.ExcelFile) -> pd.DataFrame:
+    gf = pd.read_excel(xls, sheet_name="Scores")
+    cs = pd.read_excel(xls, sheet_name="Courses")
+    gf = gf.merge(cs, how="left", on=["Course", "Tee", "Hole"])
+    gf["ScoreToPar"] = gf["Score"] - gf["Par"]
+    return gf
+
+
 def filter_gf(
     gf: pd.DataFrame,
     dates: list = None,

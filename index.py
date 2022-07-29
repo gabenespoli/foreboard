@@ -91,10 +91,7 @@ def get_golf_data(contents):
         xls = pd.ExcelFile(io.BytesIO(decoded))
     else:
         xls = pd.ExcelFile(DEFAULT_DATA_FILE)
-    gf = pd.read_excel(xls, sheet_name="Scores")
-    cs = pd.read_excel(xls, sheet_name="Courses")
-    gf = gf.merge(cs, how="left", on=["Course", "Tee", "Hole"])
-    gf["ScoreToPar"] = gf["Score"] - gf["Par"]
+    gf = utils.parse_data_file(xls)
     return gf.to_dict("records")
 
 

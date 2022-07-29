@@ -64,7 +64,15 @@ def parse_data_file(xls = pd.ExcelFile) -> pd.DataFrame:
     gf = pd.read_excel(xls, sheet_name="Scores")
     cs = pd.read_excel(xls, sheet_name="Courses")
     gf = gf.merge(cs, how="left", on=["Course", "Tee", "Hole"])
+
     gf["ScoreToPar"] = gf["Score"] - gf["Par"]
+
+    # GIR: Is # of non-putts taken <= # of non-putts allowed (based on par)?
+    gf["GIR"] = gf["Score"] - gf["Putts"] <= gf["Par"] - 2
+
+    gf["FIR"] = gf[gf["Par"] > 3]["TeeAccuracy"] == "H"
+    gf["FIR"] = gf["FIR"].fillna(False)
+
     return gf
 
 

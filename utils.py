@@ -6,6 +6,7 @@ import pandas as pd
 from app import cache
 
 DEFAULT_DATA_FILE = "./data/golf_scores.xlsx"
+MEMOIZE_TIMEOUT = 60
 
 
 def convert_date(
@@ -41,6 +42,8 @@ def convert_date(
             in_date = datetime.strptime(in_date, "%Y%m%d").date()
         elif len(in_date) == 10:
             in_date = datetime.strptime(in_date, "%Y-%m-%d").date()
+        elif len(in_date) == 19:
+            in_date = datetime.strptime(in_date, "%Y-%m-%dT%H:%M:%S").date()
         else:
             raise ValueError
     if isinstance(in_date, datetime):
@@ -98,10 +101,26 @@ def filter_df(
         max_date = convert_date(dates[1], "datetime")
         df = df[df["Date"] >= min_date & df["Date"] >= max_date]
 
-    if golfers is not None:
+    if golfers is not None and golfers != []:
         df = df[df["Golfer"].isin(golfers)]
 
-    if courses is not None:
+    if courses is not None and courses != []:
         df = df[df["Course"].isin(courses)]
 
     return df
+
+
+@cache.memoize(timeout=MEMOIZE_TIMEOUT)
+def get_scores(df: pd.DataFrame) -> pd.DataFrame:
+    scores = df.groupby(["Golfer", "Date", "Course", "Tee"]).agg(
+        Score=("Score", "sum"),
+        ScoreToPar=("ScoreToPar", "sum"),
+        Putts=("Putts", "sum"),
+        NumHoles=("Hole", "count"),
+        GreensHit=("GIR", "sum"),
+        GIR=("GIR", "mean"),
+        NumFairways=("FIR", "count"),
+        FairwaysHit=("FIR", "sum"),
+        FIR=("FIR", "mean"),
+    ).reset_index()
+    return scores

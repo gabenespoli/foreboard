@@ -39,8 +39,8 @@ def sidebar_div():
             dmc.Select(
                 id="select-metric",
                 label="Metric",
-                value="Accuracy",
-                data=["ScoreToPar", "Accuracy"],
+                value="Scores",
+                data=["Scores", "ScoreToPar", "Accuracy"],
             ),
             dmc.DateRangePicker(
                 id="date-range",
@@ -53,6 +53,7 @@ def sidebar_div():
             dmc.MultiSelect(
                 id="select-course",
                 label="Courses",
+                clearable=True,
             ),
         ]
     )
@@ -117,7 +118,7 @@ def update_dropdowns(golf_data):
         golfers,
         [golfers[0]],
         courses,
-        [courses[0]],
+        [],
     )
 
 
@@ -135,7 +136,28 @@ def update_graph1(
     df = pd.DataFrame().from_dict(golf_data)
     df = utils.filter_df(df, dates=dates, golfers=golfers, courses=courses)
 
-    if metric == "ScoreToPar":
+    if metric == "Scores":
+        scores = utils.get_scores(df)
+        return dmc.Accordion(
+            multiple=True,
+            children=[
+                dmc.AccordionItem(
+                    label=(
+                        f"{utils.convert_date(score.Date, 'str10')}"
+                        f" | {score.Course}"
+                        f" | {score.Score}"
+                        " ({0:+d})".format(score.ScoreToPar)
+                    ),
+                    children=[
+                        f"Putts: {score.Putts}",
+                        f"GIR: {score.GIR}",
+                        f"FIR: {score.FIR}",
+                    ]
+                ) for score in scores.itertuples()
+            ],
+        )
+
+    elif metric == "ScoreToPar":
         return graphs.score_to_par(df)
 
     elif metric == "Accuracy":

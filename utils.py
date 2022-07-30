@@ -3,6 +3,9 @@ from datetime import datetime
 from typing import Union
 
 import pandas as pd
+from app import cache
+
+DEFAULT_DATA_FILE = "./data/golf_scores.xlsx"
 
 
 def convert_date(
@@ -60,7 +63,9 @@ def convert_date(
     raise ValueError
 
 
-def parse_data_file(xls = pd.ExcelFile) -> pd.DataFrame:
+def parse_data_file(xls: pd.ExcelFile = None) -> pd.DataFrame:
+    if xls is None:
+        xls = pd.ExcelFile(DEFAULT_DATA_FILE)
     df = pd.read_excel(xls, sheet_name="Scores")
     cs = pd.read_excel(xls, sheet_name="Courses")
     df = df.merge(cs, how="left", on=["Course", "Tee", "Hole"])

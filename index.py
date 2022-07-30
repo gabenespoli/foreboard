@@ -15,8 +15,6 @@ from app import app
 
 server = app.server
 
-DEFAULT_DATA_FILE = "./data/golf_scores.xlsx"
-
 
 def sidebar_div():
     return html.Div(
@@ -90,7 +88,7 @@ def get_golf_data(contents):
         decoded = base64.b64decode(content_string)
         xls = pd.ExcelFile(io.BytesIO(decoded))
     else:
-        xls = pd.ExcelFile(DEFAULT_DATA_FILE)
+        xls = None
     df = utils.parse_data_file(xls)
     return df.to_dict("records")
 

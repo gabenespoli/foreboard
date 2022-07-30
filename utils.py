@@ -70,8 +70,14 @@ def parse_data_file(xls = pd.ExcelFile) -> pd.DataFrame:
     # GIR: Is # of non-putts taken <= # of non-putts allowed (based on par)?
     df["GIR"] = df["Score"] - df["Putts"] <= df["Par"] - 2
 
-    df["FIR"] = df[df["Par"] > 3]["TeeAccuracy"] == "H"
-    df["FIR"] = df["FIR"].fillna(False)
+    def fir_func(data):
+        if data["Par"] > 3:
+            if data["TeeAccuracy"] == "H":
+                return True
+            else:
+                return False
+        return None
+    df["FIR"] = df.apply(fir_func, axis=1)
 
     return df
 

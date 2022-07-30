@@ -61,23 +61,23 @@ def convert_date(
 
 
 def parse_data_file(xls = pd.ExcelFile) -> pd.DataFrame:
-    gf = pd.read_excel(xls, sheet_name="Scores")
+    df = pd.read_excel(xls, sheet_name="Scores")
     cs = pd.read_excel(xls, sheet_name="Courses")
-    gf = gf.merge(cs, how="left", on=["Course", "Tee", "Hole"])
+    df = df.merge(cs, how="left", on=["Course", "Tee", "Hole"])
 
-    gf["ScoreToPar"] = gf["Score"] - gf["Par"]
+    df["ScoreToPar"] = df["Score"] - df["Par"]
 
     # GIR: Is # of non-putts taken <= # of non-putts allowed (based on par)?
-    gf["GIR"] = gf["Score"] - gf["Putts"] <= gf["Par"] - 2
+    df["GIR"] = df["Score"] - df["Putts"] <= df["Par"] - 2
 
-    gf["FIR"] = gf[gf["Par"] > 3]["TeeAccuracy"] == "H"
-    gf["FIR"] = gf["FIR"].fillna(False)
+    df["FIR"] = df[df["Par"] > 3]["TeeAccuracy"] == "H"
+    df["FIR"] = df["FIR"].fillna(False)
 
-    return gf
+    return df
 
 
-def filter_gf(
-    gf: pd.DataFrame,
+def filter_df(
+    df: pd.DataFrame,
     dates: list = None,
     golfers: list = None,
     courses: list = None,
@@ -85,12 +85,12 @@ def filter_gf(
     if dates is not None:
         min_date = convert_date(dates[0], "datetime")
         max_date = convert_date(dates[1], "datetime")
-        gf = gf[gf["Date"] >= min_date & gf["Date"] >= max_date]
+        df = df[df["Date"] >= min_date & df["Date"] >= max_date]
 
     if golfers is not None:
-        gf = gf[gf["Golfer"].isin(golfers)]
+        df = df[df["Golfer"].isin(golfers)]
 
     if courses is not None:
-        gf = gf[gf["Course"].isin(courses)]
+        df = df[df["Course"].isin(courses)]
 
-    return gf
+    return df

@@ -91,8 +91,8 @@ def get_golf_data(contents):
         xls = pd.ExcelFile(io.BytesIO(decoded))
     else:
         xls = pd.ExcelFile(DEFAULT_DATA_FILE)
-    gf = utils.parse_data_file(xls)
-    return gf.to_dict("records")
+    df = utils.parse_data_file(xls)
+    return df.to_dict("records")
 
 
 @dash.callback(
@@ -106,12 +106,12 @@ def get_golf_data(contents):
     Input("golf-data", "data"),
 )
 def update_dropdowns(golf_data):
-    gf = pd.DataFrame().from_dict(golf_data)
-    min_date = gf["Date"].min()
-    max_date = gf["Date"].max()
-    golfers = gf["Golfer"].unique()
+    df = pd.DataFrame().from_dict(golf_data)
+    min_date = df["Date"].min()
+    max_date = df["Date"].max()
+    golfers = df["Golfer"].unique()
     golfer_style = {} if len(golfers) > 1 else {"display": "none"}
-    courses = gf["Course"].unique()
+    courses = df["Course"].unique()
     return (
         min_date,
         max_date,
@@ -134,16 +134,16 @@ def update_dropdowns(golf_data):
 def update_graph1(
     metric: str, dates: list, golfers: list, courses: list, golf_data: dict
 ):
-    gf = pd.DataFrame().from_dict(golf_data)
-    gf = utils.filter_gf(gf, dates=dates, golfers=golfers, courses=courses)
+    df = pd.DataFrame().from_dict(golf_data)
+    df = utils.filter_df(df, dates=dates, golfers=golfers, courses=courses)
 
     if metric == "ScoreToPar":
-        return graphs.score_to_par(gf)
+        return graphs.score_to_par(df)
 
     elif metric == "Accuracy":
         return (
-            graphs.accuracy(gf, "TeeAccuracy"),
-            graphs.accuracy(gf, "ApproachAccuracy"),
+            graphs.accuracy(df, "TeeAccuracy"),
+            graphs.accuracy(df, "ApproachAccuracy"),
         )
 
     return [dmc.Text("Out of bounds.")]

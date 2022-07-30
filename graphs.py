@@ -3,10 +3,10 @@ import plotly.express as px
 from dash import dcc
 
 
-def accuracy(gf: pd.DataFrame, col: str) -> dcc.Graph:
+def accuracy(df: pd.DataFrame, col: str) -> dcc.Graph:
     return dcc.Graph(
         figure=px.bar(
-            gf[gf[col].isin(["L", "H", "R"])]
+            df[df[col].isin(["L", "H", "R"])]
             .groupby([col, "Par"])
             .size()
             .rename("Count")
@@ -20,10 +20,10 @@ def accuracy(gf: pd.DataFrame, col: str) -> dcc.Graph:
     )
 
 
-def score_to_par(gf: pd.DataFrame) -> dcc.Graph:
+def score_to_par(df: pd.DataFrame) -> dcc.Graph:
     return dcc.Graph(
         figure=px.bar(
-            gf.groupby("Par")["ScoreToPar"].mean().reset_index(),
+            df.groupby("Par")["ScoreToPar"].mean().reset_index(),
             x="Par",
             y="ScoreToPar",
             title="ScoreToPar",

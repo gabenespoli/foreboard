@@ -97,9 +97,7 @@ def filter_df(
     courses: list = None,
 ):
     if dates is not None:
-        min_date = convert_date(dates[0], "datetime")
-        max_date = convert_date(dates[1], "datetime")
-        df = df[df["Date"] >= min_date & df["Date"] >= max_date]
+        df = df[(df["Date"] >= dates[0]) & (df["Date"] <= dates[1])]
 
     if golfers is not None and golfers != []:
         df = df[df["Golfer"].isin(golfers)]

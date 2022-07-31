@@ -20,6 +20,7 @@ def sidebar_div():
     return html.Div(
         [
             dmc.Title("Filters", order=2),
+
             dcc.Upload(
                 id="upload-data",
                 children=html.Div(
@@ -36,20 +37,24 @@ def sidebar_div():
                     "margin": "10px",
                 },
             ),
+
             dmc.Select(
                 id="select-metric",
                 label="Metric",
                 value="Scores",
                 data=["Scores", "ScoreToPar", "Accuracy"],
             ),
+
             dmc.DateRangePicker(
                 id="date-range",
                 label="Dates",
             ),
+
             dmc.MultiSelect(
                 id="select-golfer",
                 label="Golfer",
             ),
+
             dmc.MultiSelect(
                 id="select-course",
                 label="Courses",

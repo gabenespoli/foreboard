@@ -12,6 +12,7 @@ from dash import html
 import graphs
 import utils
 from app import app
+from dash_iconify import DashIconify
 
 server = app.server
 
@@ -21,6 +22,7 @@ def topbar_div():
             dmc.DateRangePicker(
                 id="date-range",
                 label="Dates",
+                icon=[DashIconify(icon="clarity:date-line")],
             ),
         ],
     )

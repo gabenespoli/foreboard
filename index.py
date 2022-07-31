@@ -15,6 +15,15 @@ from app import app
 
 server = app.server
 
+def topbar_div():
+    return html.Div(
+        children=[
+            dmc.DateRangePicker(
+                id="date-range",
+                label="Dates",
+            ),
+        ],
+    )
 
 def sidebar_div():
     return html.Div(
@@ -45,11 +54,6 @@ def sidebar_div():
                 data=["Scores", "ScoreToPar", "Accuracy"],
             ),
 
-            dmc.DateRangePicker(
-                id="date-range",
-                label="Dates",
-            ),
-
             dmc.MultiSelect(
                 id="select-golfer",
                 label="Golfer",
@@ -77,7 +81,7 @@ app.layout = dmc.Container(
         dmc.Grid(
             children=[
                 dmc.Col(sidebar_div(), span=3),
-                dmc.Col(dcc.Loading(html.Div(id="content-div")), span=9),
+                dmc.Col(dcc.Loading([topbar_div(), html.Div(id="content-div")]), span=9),
             ],
         ),
     ],

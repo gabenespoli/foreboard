@@ -29,9 +29,8 @@ def topbar_div():
 
 def sidebar_div():
     return html.Div(
-        [
+        children=[
             dmc.Title("Filters", order=2),
-
             dcc.Upload(
                 id="upload-data",
                 children=html.Div(
@@ -48,25 +47,22 @@ def sidebar_div():
                     "margin": "10px",
                 },
             ),
-
             dmc.Select(
                 id="select-metric",
                 label="Metric",
                 value="Scores",
                 data=["Scores", "ScoreToPar", "Accuracy"],
             ),
-
             dmc.MultiSelect(
                 id="select-golfer",
                 label="Golfer",
             ),
-
             dmc.MultiSelect(
                 id="select-course",
                 label="Courses",
                 clearable=True,
             ),
-        ]
+        ],
     )
 
 
@@ -83,7 +79,9 @@ app.layout = dmc.Container(
         dmc.Grid(
             children=[
                 dmc.Col(sidebar_div(), span=3),
-                dmc.Col(dcc.Loading([topbar_div(), html.Div(id="content-div")]), span=9),
+                dmc.Col(
+                    dcc.Loading([topbar_div(), html.Div(id="content-div")]), span=9
+                ),
             ],
         ),
     ],

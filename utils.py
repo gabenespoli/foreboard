@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Union
 
 import pandas as pd
+
 from app import cache
 
 DEFAULT_DATA_FILE = "./data/golf_scores.xlsx"
@@ -85,6 +86,7 @@ def parse_data_file(xls: pd.ExcelFile = None) -> pd.DataFrame:
             else:
                 return False
         return None
+
     df["FIR"] = df.apply(fir_func, axis=1)
 
     return df
@@ -110,15 +112,19 @@ def filter_df(
 
 @cache.memoize(timeout=MEMOIZE_TIMEOUT)
 def get_scores(df: pd.DataFrame) -> pd.DataFrame:
-    scores = df.groupby(["Golfer", "Date", "Course", "Tee"]).agg(
-        Score=("Score", "sum"),
-        ScoreToPar=("ScoreToPar", "sum"),
-        Putts=("Putts", "sum"),
-        NumHoles=("Hole", "count"),
-        GreensHit=("GIR", "sum"),
-        GIR=("GIR", "mean"),
-        NumFairways=("FIR", "count"),
-        FairwaysHit=("FIR", "sum"),
-        FIR=("FIR", "mean"),
-    ).reset_index()
+    scores = (
+        df.groupby(["Golfer", "Date", "Course", "Tee"])
+        .agg(
+            Score=("Score", "sum"),
+            ScoreToPar=("ScoreToPar", "sum"),
+            Putts=("Putts", "sum"),
+            NumHoles=("Hole", "count"),
+            GreensHit=("GIR", "sum"),
+            GIR=("GIR", "mean"),
+            NumFairways=("FIR", "count"),
+            FairwaysHit=("FIR", "sum"),
+            FIR=("FIR", "mean"),
+        )
+        .reset_index()
+    )
     return scores

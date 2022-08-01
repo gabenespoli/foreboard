@@ -8,13 +8,14 @@ from dash import Input
 from dash import Output
 from dash import dcc
 from dash import html
+from dash_iconify import DashIconify
 
 import graphs
 import utils
 from app import app
-from dash_iconify import DashIconify
 
 server = app.server
+
 
 def topbar_div():
     return html.Div(
@@ -42,6 +43,7 @@ def topbar_div():
             ),
         ],
     )
+
 
 def sidebar_div():
     return html.Div(

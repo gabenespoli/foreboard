@@ -94,12 +94,22 @@ def parse_data_file(xls: pd.ExcelFile = None) -> pd.DataFrame:
 
 def filter_df(
     df: pd.DataFrame,
-    dates: list = None,
+    dates: str = None,
+    date_range: list = None,
     golfers: list = None,
     courses: list = None,
 ):
-    if dates is not None:
-        df = df[(df["Date"] >= dates[0]) & (df["Date"] <= dates[1])]
+    if dates is None or dates == "Last 20 rounds":
+        dates_of_last_20 = df["Date"].unique()
+        dates_of_last_20.sort()
+        dates_of_last_20 = dates_of_last_20[::-1][0:20]
+        date_range = [
+            convert_date(min(dates_of_last_20), "str10"),
+            convert_date(max(dates_of_last_20), "str10"),
+        ]
+
+    if date_range is not None:
+        df = df[(df["Date"] >= date_range[0]) & (df["Date"] <= date_range[1])]
 
     if golfers is not None and golfers != []:
         df = df[df["Golfer"].isin(golfers)]

@@ -19,10 +19,26 @@ server = app.server
 def topbar_div():
     return html.Div(
         children=[
-            dmc.DateRangePicker(
-                id="date-range",
-                label="Dates",
-                icon=[DashIconify(icon="clarity:date-line")],
+            dmc.Col(
+                span=4,
+                children=dmc.Select(
+                    id="select-dates",
+                    label="Dates",
+                    value="Last 20 rounds",
+                    data=[
+                        dict(label="Last 20 rounds", value="Last 20 rounds"),
+                        dict(label="Custom...", value="Custom...", disabled=True),
+                    ],
+                ),
+            ),
+            dmc.Col(
+                span=4,
+                children=dmc.DateRangePicker(
+                    id="date-range",
+                    label="Custom date range",
+                    icon=[DashIconify(icon="clarity:date-line")],
+                    disabled=True,
+                ),
             ),
         ],
     )
@@ -134,16 +150,24 @@ def update_dropdowns(golf_data):
 @dash.callback(
     Output("content-div", "children"),
     Input("select-metric", "value"),
+    Input("select-dates", "value"),
     Input("date-range", "value"),
     Input("select-golfer", "value"),
     Input("select-course", "value"),
     Input("golf-data", "data"),
 )
 def update_graph1(
-    metric: str, dates: list, golfers: list, courses: list, golf_data: dict
+    metric: str,
+    dates: str,
+    date_range: list,
+    golfers: list,
+    courses: list,
+    golf_data: dict,
 ):
     df = pd.DataFrame().from_dict(golf_data)
-    df = utils.filter_df(df, dates=dates, golfers=golfers, courses=courses)
+    df = utils.filter_df(
+        df, dates=dates, date_range=date_range, golfers=golfers, courses=courses
+    )
 
     if metric == "Scores":
         return graphs.scores(df)

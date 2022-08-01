@@ -28,7 +28,7 @@ def topbar_div():
                     value="Last 20 rounds",
                     data=[
                         dict(label="Last 20 rounds", value="Last 20 rounds"),
-                        dict(label="Custom...", value="Custom...", disabled=True),
+                        dict(label="Custom...", value="Custom...", disabled=False),
                     ],
                 ),
             ),
@@ -49,22 +49,6 @@ def sidebar_div():
     return html.Div(
         children=[
             dmc.Title("Filters", order=2),
-            dcc.Upload(
-                id="upload-data",
-                children=html.Div(
-                    ["Drag and Drop or ", html.A("Select"), " an Excel file"]
-                ),
-                style={
-                    "width": "100%",
-                    "height": "60px",
-                    "lineHeight": "60px",
-                    "borderWidth": "1px",
-                    "borderStyle": "dashed",
-                    "borderRadius": "5px",
-                    "textAlign": "center",
-                    "margin": "10px",
-                },
-            ),
             dmc.Select(
                 id="select-metric",
                 label="Metric",
@@ -91,7 +75,36 @@ app.layout = dmc.Container(
         dcc.Store(id="golf-data"),
         dmc.Header(
             height=60,
-            children=[dmc.Text("Foreboard", size="xl", weight=700)],
+            children=[
+                dmc.Container(
+                    fluid=True,
+                    children=[
+                        dmc.Group(
+                            position="left",
+                            children=dmc.Text("Foreboard", size="xl", weight=700),
+                        ),
+                        dmc.Group(
+                            position="right",
+                            children=dcc.Upload(
+                                id="upload-data",
+                                children=html.Div(
+                                    ["Drag and Drop or ", html.A("Select"), " an Excel file"]
+                                ),
+                                style={
+                                    # "width": "100%",
+                                    # "height": "20px",
+                                    # "lineHeight": "20px",
+                                    "borderWidth": "1px",
+                                    "borderStyle": "solid",
+                                    "borderRadius": "5px",
+                                    "textAlign": "center",
+                                    # "margin": "10px",
+                                },
+                            ),
+                        ),
+                    ],
+                ),
+            ],
             style={"backgroundColor": dmc.theme.DEFAULT_COLORS["green"][4]},
         ),
         dmc.Grid(
@@ -124,23 +137,26 @@ def get_golf_data(contents):
 @dash.callback(
     Output("date-range", "minDate"),
     Output("date-range", "maxDate"),
+    Output("date-range", "style"),
     Output("select-golfer", "style"),
     Output("select-golfer", "data"),
     Output("select-golfer", "value"),
     Output("select-course", "data"),
     Output("select-course", "value"),
+    Input("select-dates", "value"),
     Input("golf-data", "data"),
 )
-def update_dropdowns(golf_data):
+def update_dropdowns(select_date: str, golf_data):
     df = pd.DataFrame().from_dict(golf_data)
     min_date = df["Date"].min()
     max_date = df["Date"].max()
-    golfers = df["Golfer"].unique()
+    golfers = df["Golfer"].sort_values().unique()
     golfer_style = {} if len(golfers) > 1 else {"display": "none"}
-    courses = df["Course"].unique()
+    courses = df["Course"].sort_values().unique()
     return (
         min_date,
         max_date,
+        {} if select_date == "Custom..." else {"display": "none"},
         golfer_style,
         golfers,
         [golfers[0]],

@@ -84,7 +84,7 @@ def sidebar_div():
 
 app.layout = dmc.Container(
     id="container",
-    size="xl",
+    size="md",
     children=[
         dcc.Store(id="golf-data"),
         dmc.Header(

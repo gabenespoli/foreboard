@@ -2,6 +2,7 @@ from datetime import date
 from datetime import datetime
 from typing import Union
 
+import numpy as np
 import pandas as pd
 
 from app import cache
@@ -11,7 +12,7 @@ MEMOIZE_TIMEOUT = 60
 
 
 def convert_date(
-    in_date: Union[str, date, datetime],
+    in_date: Union[str, date, datetime, np.datetime64],
     out_type: str,
     in_fmt: str = None,
 ) -> Union[str, date, datetime]:
@@ -36,6 +37,8 @@ def convert_date(
         return None
     # convert to date type
     # first convert str to datetime, then datetime to date
+    if isinstance(in_date, np.datetime64):
+        in_date = pd.to_datetime(in_date)
     if isinstance(in_date, str):
         if in_fmt is not None:
             in_date = datetime.strptime(in_date, in_fmt).date()

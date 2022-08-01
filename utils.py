@@ -2,7 +2,9 @@ from datetime import date
 from datetime import datetime
 from typing import Union
 
+import numpy as np
 import pandas as pd
+
 from app import cache
 
 DEFAULT_DATA_FILE = "./data/golf_scores.xlsx"
@@ -10,7 +12,7 @@ MEMOIZE_TIMEOUT = 60
 
 
 def convert_date(
-    in_date: Union[str, date, datetime],
+    in_date: Union[str, date, datetime, np.datetime64],
     out_type: str,
     in_fmt: str = None,
 ) -> Union[str, date, datetime]:
@@ -35,6 +37,8 @@ def convert_date(
         return None
     # convert to date type
     # first convert str to datetime, then datetime to date
+    if isinstance(in_date, np.datetime64):
+        in_date = pd.to_datetime(in_date)
     if isinstance(in_date, str):
         if in_fmt is not None:
             in_date = datetime.strptime(in_date, in_fmt).date()
@@ -85,6 +89,7 @@ def parse_data_file(xls: pd.ExcelFile = None) -> pd.DataFrame:
             else:
                 return False
         return None
+
     df["FIR"] = df.apply(fir_func, axis=1)
 
     return df
@@ -92,14 +97,22 @@ def parse_data_file(xls: pd.ExcelFile = None) -> pd.DataFrame:
 
 def filter_df(
     df: pd.DataFrame,
-    dates: list = None,
+    dates: str = None,
+    date_range: list = None,
     golfers: list = None,
     courses: list = None,
 ):
-    if dates is not None:
-        min_date = convert_date(dates[0], "datetime")
-        max_date = convert_date(dates[1], "datetime")
-        df = df[df["Date"] >= min_date & df["Date"] >= max_date]
+    if dates is None or dates == "Last 20 rounds":
+        dates_of_last_20 = df["Date"].unique()
+        dates_of_last_20.sort()
+        dates_of_last_20 = dates_of_last_20[::-1][0:20]
+        date_range = [
+            convert_date(min(dates_of_last_20), "str10"),
+            convert_date(max(dates_of_last_20), "str10"),
+        ]
+
+    if date_range is not None:
+        df = df[(df["Date"] >= date_range[0]) & (df["Date"] <= date_range[1])]
 
     if golfers is not None and golfers != []:
         df = df[df["Golfer"].isin(golfers)]
@@ -112,15 +125,19 @@ def filter_df(
 
 @cache.memoize(timeout=MEMOIZE_TIMEOUT)
 def get_scores(df: pd.DataFrame) -> pd.DataFrame:
-    scores = df.groupby(["Golfer", "Date", "Course", "Tee"]).agg(
-        Score=("Score", "sum"),
-        ScoreToPar=("ScoreToPar", "sum"),
-        Putts=("Putts", "sum"),
-        NumHoles=("Hole", "count"),
-        GreensHit=("GIR", "sum"),
-        GIR=("GIR", "mean"),
-        NumFairways=("FIR", "count"),
-        FairwaysHit=("FIR", "sum"),
-        FIR=("FIR", "mean"),
-    ).reset_index()
+    scores = (
+        df.groupby(["Golfer", "Date", "Course", "Tee"])
+        .agg(
+            Score=("Score", "sum"),
+            ScoreToPar=("ScoreToPar", "sum"),
+            Putts=("Putts", "sum"),
+            NumHoles=("Hole", "count"),
+            GreensHit=("GIR", "sum"),
+            GIR=("GIR", "mean"),
+            NumFairways=("FIR", "count"),
+            FairwaysHit=("FIR", "sum"),
+            FIR=("FIR", "mean"),
+        )
+        .reset_index()
+    )
     return scores

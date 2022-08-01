@@ -146,25 +146,7 @@ def update_graph1(
     df = utils.filter_df(df, dates=dates, golfers=golfers, courses=courses)
 
     if metric == "Scores":
-        scores = utils.get_scores(df)
-        return dmc.Accordion(
-            multiple=True,
-            children=[
-                dmc.AccordionItem(
-                    label=(
-                        f"{utils.convert_date(score.Date, 'str10')}"
-                        f" | {score.Course}"
-                        f" | {score.Score}"
-                        " ({0:+d})".format(score.ScoreToPar)
-                    ),
-                    children=[
-                        f"Putts: {score.Putts}",
-                        f"GIR: {score.GIR}",
-                        f"FIR: {score.FIR}",
-                    ]
-                ) for score in scores.itertuples()
-            ],
-        )
+        return graphs.scores(df)
 
     elif metric == "ScoreToPar":
         return graphs.score_to_par(df)

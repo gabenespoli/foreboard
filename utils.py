@@ -102,7 +102,9 @@ def filter_df(
     golfers: list = None,
     courses: list = None,
 ):
-    if dates is None or dates == "Last 20 rounds":
+    if dates is None:
+        pass
+    elif dates == "Last 20 rounds":
         dates_of_last_20 = df["Date"].unique()
         dates_of_last_20.sort()
         dates_of_last_20 = dates_of_last_20[::-1][0:20]

@@ -34,7 +34,7 @@ def score_to_par(df: pd.DataFrame) -> dcc.Graph:
 
 
 def scores(df: pd.DataFrame) -> dmc.Accordion:
-    scores = utils.get_scores(df)
+    scores = utils.get_scores(df).sort_values("Date", ascending=False)
     return dmc.Accordion(
         multiple=True,
         children=[
@@ -47,8 +47,8 @@ def scores(df: pd.DataFrame) -> dmc.Accordion:
                 ),
                 children=[
                     f"Putts: {score.Putts}",
-                    f"GIR: {score.GIR}",
-                    f"FIR: {score.FIR}",
+                    f" | GIR: {score.GIR}",
+                    f" | FIR: {score.FIR}",
                 ]
             ) for score in scores.itertuples()
         ],

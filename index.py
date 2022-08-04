@@ -17,44 +17,55 @@ from app import app
 server = app.server
 
 
-def topbar_div():
-    return html.Div(
+
+
+def get_header():
+    return dmc.Header(
+        height=60,
         children=[
-            dmc.Col(
-                span=4,
-                children=dmc.Select(
-                    id="select-dates",
-                    label="Dates",
-                    value="Last 20 rounds",
-                    data=[
-                        dict(label="Last 20 rounds", value="Last 20 rounds"),
-                        dict(label="Custom...", value="Custom...", disabled=False),
-                    ],
-                ),
-            ),
-            dmc.Col(
-                span=4,
-                children=dmc.DateRangePicker(
-                    id="date-range",
-                    label="Custom date range",
-                    icon=[DashIconify(icon="clarity:date-line")],
-                    disabled=True,
-                ),
+            dmc.Container(
+                fluid=True,
+                children=[
+                    dmc.Group(
+                        position="left",
+                        children=dmc.Text("Foreboard", size="xl", weight=700),
+                    ),
+                    dmc.Group(
+                        position="right",
+                        children=dcc.Upload(
+                            id="upload-data",
+                            children=html.Div(
+                                [
+                                    "Drag and Drop or ",
+                                    html.A("Select"),
+                                    " an Excel file",
+                                ]
+                            ),
+                            style={
+                                # "width": "100%",
+                                # "height": "20px",
+                                # "lineHeight": "20px",
+                                "borderWidth": "1px",
+                                "borderStyle": "solid",
+                                "borderRadius": "5px",
+                                "textAlign": "center",
+                                # "margin": "10px",
+                            },
+                        ),
+                    ),
+                ],
             ),
         ],
+        style={"backgroundColor": dmc.theme.DEFAULT_COLORS["green"][4]},
     )
 
 
-def sidebar_div():
-    return html.Div(
+def get_filter_drawer():
+    return dmc.Drawer(
+        title="Filters",
+        id="filter-drawer",
+        padding="md",
         children=[
-            dmc.Title("Filters", order=2),
-            dmc.Select(
-                id="select-metric",
-                label="Metric",
-                value="Scores",
-                data=["Scores", "ScoreToPar", "Accuracy"],
-            ),
             dmc.MultiSelect(
                 id="select-golfer",
                 label="Golfer",
@@ -64,57 +75,56 @@ def sidebar_div():
                 label="Courses",
                 clearable=True,
             ),
+            dmc.Select(
+                id="select-dates",
+                label="Dates",
+                clearable=True,
+                data=[
+                    dict(label="Last 20 rounds", value="Last 20 rounds"),
+                    dict(label="Custom...", value="Custom...", disabled=False),
+                ],
+            ),
+            dmc.DateRangePicker(
+                id="date-range",
+                label="Custom date range",
+                icon=[DashIconify(icon="clarity:date-line")],
+                disabled=True,
+            ),
         ],
     )
 
 
 app.layout = dmc.Container(
     id="container",
-    size="md",
+    size="sm",
     children=[
         dcc.Store(id="golf-data"),
-        dmc.Header(
-            height=60,
-            children=[
-                dmc.Container(
-                    fluid=True,
-                    children=[
-                        dmc.Group(
-                            position="left",
-                            children=dmc.Text("Foreboard", size="xl", weight=700),
-                        ),
-                        dmc.Group(
-                            position="right",
-                            children=dcc.Upload(
-                                id="upload-data",
-                                children=html.Div(
-                                    ["Drag and Drop or ", html.A("Select"), " an Excel file"]
-                                ),
-                                style={
-                                    # "width": "100%",
-                                    # "height": "20px",
-                                    # "lineHeight": "20px",
-                                    "borderWidth": "1px",
-                                    "borderStyle": "solid",
-                                    "borderRadius": "5px",
-                                    "textAlign": "center",
-                                    # "margin": "10px",
-                                },
-                            ),
-                        ),
-                    ],
-                ),
-            ],
-            style={"backgroundColor": dmc.theme.DEFAULT_COLORS["green"][4]},
-        ),
+        get_header(),
+        get_filter_drawer(),
         dmc.Grid(
             children=[
-                dmc.Col(sidebar_div(), span=3),
                 dmc.Col(
-                    dcc.Loading([topbar_div(), html.Div(id="content-div")]), span=9
+                    span=2,
+                    children=html.Div(
+                        style={"text-align": "center"},
+                        children=dmc.Button(
+                            children=DashIconify(icon="fa:filter"),
+                            id="filter-drawer-button",
+                        ),
+                    ),
+                ),
+                dmc.Col(
+                    span=6,
+                    children=dmc.Select(
+                        id="select-metric",
+                        label="Metric",
+                        value="Scores",
+                        data=["Scores", "ScoreToPar", "Accuracy"],
+                    ),
                 ),
             ],
         ),
+        html.Div(id="content-div")
     ],
 )
 
@@ -132,6 +142,18 @@ def get_golf_data(contents):
         xls = None
     df = utils.parse_data_file(xls)
     return df.to_dict("records")
+
+
+@dash.callback(
+    Output("filter-drawer", "opened"),
+    # Output("filter-drawer-button", "n_clicks"),
+    Input("filter-drawer-button", "n_clicks"),
+    # prevent_inital_call=True,
+)
+def toggle_filter_drawer(n_clicks):
+    if n_clicks is not None:
+        return True
+    return False
 
 
 @dash.callback(

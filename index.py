@@ -1,5 +1,6 @@
 import base64
 import io
+from datetime import datetime
 
 import dash
 import dash_mantine_components as dmc
@@ -16,7 +17,7 @@ from app import app
 
 server = app.server
 
-
+print(f"Starting Foreboard...  [{datetime.now()}]")
 
 
 def get_header():

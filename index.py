@@ -125,7 +125,7 @@ app.layout = dmc.Container(
                 ),
             ],
         ),
-        html.Div(id="content-div")
+        html.Div(id="content-div"),
     ],
 )
 

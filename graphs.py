@@ -1,7 +1,8 @@
-import pandas as pd
 import dash_mantine_components as dmc
+import pandas as pd
 import plotly.express as px
 from dash import dcc
+
 import utils
 
 
@@ -49,7 +50,8 @@ def scores(df: pd.DataFrame) -> dmc.Accordion:
                     f"Putts: {score.Putts}" + " ({0:+d})".format(score.PuttsToPar),
                     f" | GIR: {score.GIR}",
                     f" | FIR: {score.FIR}",
-                ]
-            ) for score in scores.itertuples()
+                ],
+            )
+            for score in scores.itertuples()
         ],
     )

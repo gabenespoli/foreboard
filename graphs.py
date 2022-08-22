@@ -34,6 +34,36 @@ def score_to_par(df: pd.DataFrame) -> dcc.Graph:
     )
 
 
+def scores_gir_graph(greens_hit: int, num_holes: int):
+    greens_missed = num_holes - greens_hit
+    pct = round((greens_hit / num_holes) * 100, 0)
+    fig = px.pie(
+        dict(names=["Hit", "Miss"], values=[greens_hit, greens_missed]),
+        names="names",
+        values="values",
+        color="names",
+        color_discrete_map=dict(Hit="#33cc33", Miss="#cccccc"),
+        category_orders=dict(names=["Hit", "Miss"]),
+        hole=1/3,
+    )
+
+    fig.add_annotation(
+        text="{:.0f}%".format(pct),
+        showarrow=False,
+    )
+
+    fig.update_traces(
+        texttemplate="%{value}",
+        textposition="inside",
+    )
+
+    fig.update_layout(showlegend=False)
+
+    style = {"height": "30vh"}
+
+    return dcc.Graph(figure=fig, style=style)
+
+
 def scores(df: pd.DataFrame) -> dmc.Accordion:
     scores = utils.get_scores(df).sort_values("Date", ascending=False)
     return dmc.Accordion(
@@ -58,6 +88,7 @@ def scores(df: pd.DataFrame) -> dmc.Accordion:
                     f"Putts: {score.Putts}" + " ({0:+d})".format(score.PuttsToPar),
                     f" | GIR: {score.GIR}",
                     f" | FIR: {score.FIR}",
+                    scores_gir_graph(score.GreensHit, score.NumHoles),
                 ],
             )
             for score in scores.itertuples()

@@ -41,10 +41,18 @@ def scores(df: pd.DataFrame) -> dmc.Accordion:
         children=[
             dmc.AccordionItem(
                 label=(
-                    f"{utils.convert_date(score.Date, 'str10')}"
-                    f" | {score.Course}"
-                    f" | {score.Score}"
-                    " ({0:+d})".format(score.ScoreToPar)
+                    # dmc.Badge(f"{score.NumHoles}", color="gray"),
+                    # " ",
+                    dmc.Badge(
+                        f"{utils.convert_date(score.Date, 'str10')}", color="gray"
+                    ),
+                    f" {score.Course}: ",
+                    f"{score.Score} ",
+                    dmc.Badge(
+                        " {0:+d}".format(score.ScoreToPar),
+                        color="blue",
+                        variant="filled",
+                    ),
                 ),
                 children=[
                     f"Putts: {score.Putts}" + " ({0:+d})".format(score.PuttsToPar),

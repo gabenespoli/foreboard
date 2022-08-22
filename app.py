@@ -1,5 +1,4 @@
 import dash
-
 from flask_caching import Cache
 
 app = dash.Dash(

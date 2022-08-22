@@ -78,6 +78,7 @@ def parse_data_file(xls: pd.ExcelFile = None) -> pd.DataFrame:
     df = df.merge(cs, how="left", on=["Course", "Tee", "Hole"])
 
     df["ScoreToPar"] = df["Score"] - df["Par"]
+    df["PuttsToPar"] = df["Putts"] - 2
 
     # GIR: Is # of non-putts taken <= # of non-putts allowed (based on par)?
     df["GIR"] = df["Score"] - df["Putts"] <= df["Par"] - 2
@@ -133,6 +134,7 @@ def get_scores(df: pd.DataFrame) -> pd.DataFrame:
             Score=("Score", "sum"),
             ScoreToPar=("ScoreToPar", "sum"),
             Putts=("Putts", "sum"),
+            PuttsToPar=("PuttsToPar", "sum"),
             NumHoles=("Hole", "count"),
             GreensHit=("GIR", "sum"),
             GIR=("GIR", "mean"),

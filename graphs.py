@@ -46,7 +46,7 @@ def scores(df: pd.DataFrame) -> dmc.Accordion:
                     " ({0:+d})".format(score.ScoreToPar)
                 ),
                 children=[
-                    f"Putts: {score.Putts}",
+                    f"Putts: {score.Putts}" + " ({0:+d})".format(score.PuttsToPar),
                     f" | GIR: {score.GIR}",
                     f" | FIR: {score.FIR}",
                 ]

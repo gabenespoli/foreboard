@@ -5,11 +5,7 @@ from typing import Union
 import numpy as np
 import pandas as pd
 
-from app import cache
-
 DEFAULT_DATA_FILE = "./data/golf_scores.xlsx"
-MEMOIZE_TIMEOUT = 60
-
 
 def dtx(
     in_date: Union[str, date, datetime, np.datetime64],
@@ -126,7 +122,6 @@ def filter_df(
     return df
 
 
-@cache.memoize(timeout=MEMOIZE_TIMEOUT)
 def get_scores(df: pd.DataFrame) -> pd.DataFrame:
     scores = (
         df.groupby(["Golfer", "Date", "Course", "Tee"])
@@ -144,4 +139,15 @@ def get_scores(df: pd.DataFrame) -> pd.DataFrame:
         )
         .reset_index()
     )
+    return scores
+
+
+def parse_golf_data(golf_data: dict, **filter_df_args) -> pd.DataFrame:
+    df = pd.DataFrame().from_dict(golf_data)
+    df = filter_df(df, **filter_df_args)
+    return df
+
+
+def parse_scores_data(scores_data: dict) -> pd.DataFrame:
+    scores = pd.DataFrame().from_dict(scores_data)
     return scores

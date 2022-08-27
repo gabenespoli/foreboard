@@ -11,7 +11,6 @@ from dash import dcc
 from dash import html
 from dash_iconify import DashIconify
 
-import figures
 import ui
 import utils
 from app import app

@@ -95,40 +95,44 @@ def get_filter_drawer():
     )
 
 
-app.layout = dmc.Container(
-    id="container",
-    size="sm",
-    children=[
-        dcc.Store(id="golf-data"),
-        dcc.Store(id="scores-data"),
-        get_header(),
-        get_filter_drawer(),
-        dmc.Grid(
-            children=[
-                dmc.Col(
-                    span=2,
-                    children=html.Div(
-                        style={"text-align": "center"},
-                        children=dmc.Button(
-                            children=DashIconify(icon="fa:filter"),
-                            id="filter-drawer-button",
+def layout():
+    return dmc.Container(
+        id="container",
+        size="sm",
+        children=[
+            dcc.Store(id="golf-data"),
+            dcc.Store(id="scores-data"),
+            get_header(),
+            get_filter_drawer(),
+            dmc.Grid(
+                children=[
+                    dmc.Col(
+                        span=2,
+                        children=html.Div(
+                            style={"text-align": "center"},
+                            children=dmc.Button(
+                                children=DashIconify(icon="fa:filter"),
+                                id="filter-drawer-button",
+                            ),
                         ),
                     ),
-                ),
-                dmc.Col(
-                    span=6,
-                    children=dmc.Select(
-                        id="select-metric",
-                        label="Metric",
-                        value="Scores",
-                        data=["Scores", "In Regulation", "ScoreToPar", "Accuracy"],
+                    dmc.Col(
+                        span=6,
+                        children=dmc.Select(
+                            id="select-metric",
+                            label="Metric",
+                            value="Scores",
+                            data=["Scores", "In Regulation", "ScoreToPar", "Accuracy"],
+                        ),
                     ),
-                ),
-            ],
-        ),
-        html.Div(id="content-div"),
-    ],
-)
+                ],
+            ),
+            html.Div(id="content-div"),
+        ],
+    )
+
+
+app.layout = dmc.MantineProvider(theme={"colorScheme": "dark"}, children=layout())
 
 
 @app.callback(

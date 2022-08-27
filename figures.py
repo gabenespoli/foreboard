@@ -1,5 +1,8 @@
 import pandas as pd
 import plotly.express as px
+import plotly.io as pio
+
+pio.templates.default = "plotly_dark"
 
 
 def accuracy(df: pd.DataFrame, col: str):

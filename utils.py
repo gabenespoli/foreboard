@@ -5,13 +5,9 @@ from typing import Union
 import numpy as np
 import pandas as pd
 
-from app import cache
-
 DEFAULT_DATA_FILE = "./data/golf_scores.xlsx"
-MEMOIZE_TIMEOUT = 60
 
-
-def convert_date(
+def dtx(
     in_date: Union[str, date, datetime, np.datetime64],
     out_type: str,
     in_fmt: str = None,
@@ -110,8 +106,8 @@ def filter_df(
         dates_of_last_20.sort()
         dates_of_last_20 = dates_of_last_20[::-1][0:20]
         date_range = [
-            convert_date(min(dates_of_last_20), "str10"),
-            convert_date(max(dates_of_last_20), "str10"),
+            dtx(min(dates_of_last_20), "str10"),
+            dtx(max(dates_of_last_20), "str10"),
         ]
 
     if date_range is not None:
@@ -126,7 +122,6 @@ def filter_df(
     return df
 
 
-@cache.memoize(timeout=MEMOIZE_TIMEOUT)
 def get_scores(df: pd.DataFrame) -> pd.DataFrame:
     scores = (
         df.groupby(["Golfer", "Date", "Course", "Tee"])
@@ -144,4 +139,15 @@ def get_scores(df: pd.DataFrame) -> pd.DataFrame:
         )
         .reset_index()
     )
+    return scores
+
+
+def parse_golf_data(golf_data: dict, **filter_df_args) -> pd.DataFrame:
+    df = pd.DataFrame().from_dict(golf_data)
+    df = filter_df(df, **filter_df_args)
+    return df
+
+
+def parse_scores_data(scores_data: dict) -> pd.DataFrame:
+    scores = pd.DataFrame().from_dict(scores_data)
     return scores

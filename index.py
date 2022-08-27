@@ -11,7 +11,7 @@ from dash import dcc
 from dash import html
 from dash_iconify import DashIconify
 
-import graphs
+import ui
 import utils
 from app import app
 
@@ -95,39 +95,44 @@ def get_filter_drawer():
     )
 
 
-app.layout = dmc.Container(
-    id="container",
-    size="sm",
-    children=[
-        dcc.Store(id="golf-data"),
-        get_header(),
-        get_filter_drawer(),
-        dmc.Grid(
-            children=[
-                dmc.Col(
-                    span=2,
-                    children=html.Div(
-                        style={"text-align": "center"},
-                        children=dmc.Button(
-                            children=DashIconify(icon="fa:filter"),
-                            id="filter-drawer-button",
+def layout():
+    return dmc.Container(
+        id="container",
+        size="sm",
+        children=[
+            dcc.Store(id="golf-data"),
+            dcc.Store(id="scores-data"),
+            get_header(),
+            get_filter_drawer(),
+            dmc.Grid(
+                children=[
+                    dmc.Col(
+                        span=2,
+                        children=html.Div(
+                            style={"text-align": "center"},
+                            children=dmc.Button(
+                                children=DashIconify(icon="fa:filter"),
+                                id="filter-drawer-button",
+                            ),
                         ),
                     ),
-                ),
-                dmc.Col(
-                    span=6,
-                    children=dmc.Select(
-                        id="select-metric",
-                        label="Metric",
-                        value="Scores",
-                        data=["Scores", "ScoreToPar", "Accuracy"],
+                    dmc.Col(
+                        span=6,
+                        children=dmc.Select(
+                            id="select-metric",
+                            label="Metric",
+                            value="Scores",
+                            data=["Scores", "In Regulation", "ScoreToPar", "Accuracy"],
+                        ),
                     ),
-                ),
-            ],
-        ),
-        html.Div(id="content-div"),
-    ],
-)
+                ],
+            ),
+            html.Div(id="content-div"),
+        ],
+    )
+
+
+app.layout = dmc.MantineProvider(theme={"colorScheme": "dark"}, children=layout())
 
 
 @app.callback(
@@ -143,6 +148,16 @@ def get_golf_data(contents):
         xls = None
     df = utils.parse_data_file(xls)
     return df.to_dict("records")
+
+
+@app.callback(
+    Output("scores-data", "data"),
+    Input("golf-data", "data"),
+)
+def get_scores_data(golf_data: dict):
+    df = pd.DataFrame().from_dict(golf_data)
+    scores = utils.get_scores(df)
+    return scores.to_dict("records")
 
 
 @dash.callback(
@@ -196,6 +211,7 @@ def update_dropdowns(select_date: str, golf_data):
     Input("select-golfer", "value"),
     Input("select-course", "value"),
     Input("golf-data", "data"),
+    Input("scores-data", "data"),
 )
 def update_graph1(
     metric: str,
@@ -204,23 +220,27 @@ def update_graph1(
     golfers: list,
     courses: list,
     golf_data: dict,
+    scores_data: dict,
 ):
-    df = pd.DataFrame().from_dict(golf_data)
-    df = utils.filter_df(
-        df, dates=dates, date_range=date_range, golfers=golfers, courses=courses
+    filter_df_args = dict(
+        dates=dates, date_range=date_range, golfers=golfers, courses=courses
     )
 
     if metric == "Scores":
-        return graphs.scores(df)
+        scores = utils.parse_scores_data(scores_data)
+        return ui.scores_accordion(scores)
+
+    if metric == "In Regulation":
+        df = utils.parse_golf_data(golf_data, **filter_df_args)
+        return ui.in_regulation(df)
 
     elif metric == "ScoreToPar":
-        return graphs.score_to_par(df)
+        df = utils.parse_golf_data(golf_data, **filter_df_args)
+        return ui.score_to_par(df)
 
     elif metric == "Accuracy":
-        return (
-            graphs.accuracy(df, "TeeAccuracy"),
-            graphs.accuracy(df, "ApproachAccuracy"),
-        )
+        df = utils.parse_golf_data(golf_data, **filter_df_args)
+        return ui.accuracy(df)
 
     return [dmc.Text("Out of bounds.")]
 

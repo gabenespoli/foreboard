@@ -21,7 +21,7 @@ def accuracy(df: pd.DataFrame, col: str):
     return fig
 
 
-def fir_gir_fig(hit: int, total: int, title: str):
+def fir_gir_fig(hit: int, total: int, title: str, **kwargs):
     missed = total - hit
     pct = round((hit / total) * 100, 0)
     fig = px.pie(
@@ -33,6 +33,7 @@ def fir_gir_fig(hit: int, total: int, title: str):
         category_orders=dict(names=["Hit", "Miss"]),
         hole=0.4,
         # title=title,
+        **kwargs,
     )
 
     fig.add_annotation(
